@@ -1,0 +1,67 @@
+from fastapi import FastAPI
+from pydantic import BaseModel, conlist
+from typing import List
+from joblib import Parallel, delayed
+from copy import deepcopy
+
+import multiprocessing as mp
+import spacy
+import numpy as np
+import uvicorn
+
+app = FastAPI(title="Anonymize text with batching feature")
+
+# Represent batch of text to anonymize
+class Text(BaseModel):
+    entities: conlist(item_type=str, min_items=1)
+    
+@app.on_event("startup")
+def load_model():
+    # Load model from models directory
+    global model_nlp
+    model_nlp = spacy.load("models/en")
+
+@app.get("/")
+def home():
+    return "API to anonymize text in batch format"
+
+def anonymizer(arg: np.array, model_nlp):
+    # Anonymize the text
+    text = model_nlp(str(arg))
+
+    entities = [
+        {
+            "start": ent.start_char,
+            "end": ent.end_char,
+            "type": ent.label_,
+            "text": ent.text,
+            "position": ent.start
+        }
+        for ent in text.ents
+    ]
+    
+    anonymized_text = list(deepcopy(text))
+
+    for entity in entities:
+        
+        start = entity["start"]
+        end = entity["end"]
+        anonymized_text[entity["position"]] = "X" * (end - start - 1)
+    
+    anonymized_text = " ".join(str(s) for s in anonymized_text)
+    return anonymized_text
+
+@app.post("/entities")
+def extract_entities(text: Text, num_cores:int = 4):
+    # Perform anonymization
+    batches = text.entities
+    np_batches = np.array(batches)
+    # Multiprocessing with 2 processes
+    pool = mp.Pool(num_cores)
+    # Apply pool to the batches
+    results = [pool.apply(anonymizer, args=(row, model_nlp)) for row in np_batches]
+    pool.close()
+    return {"Anonymized_Text": results}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000, debug=True)
