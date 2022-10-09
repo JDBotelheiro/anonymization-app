@@ -1,13 +1,10 @@
 from fastapi import FastAPI
 from pydantic import BaseModel, conlist
-from typing import List
-from joblib import Parallel, delayed
 from copy import deepcopy
 
 import multiprocessing as mp
 import spacy
 import numpy as np
-import uvicorn
 
 app = FastAPI(title="Anonymize text with batching feature")
 
@@ -19,7 +16,7 @@ class Text(BaseModel):
 def load_model():
     # Load model from models directory
     global model_nlp
-    model_nlp = spacy.load("models/en")
+    model_nlp = spacy.load("app/models/en")
 
 @app.get("/")
 def home():
@@ -39,11 +36,11 @@ def anonymizer(arg: np.array, model_nlp):
         }
         for ent in text.ents
     ]
-    
+    # Copy text using deepcopy
     anonymized_text = list(deepcopy(text))
 
     for entity in entities:
-        
+        # Removing the words
         start = entity["start"]
         end = entity["end"]
         anonymized_text[entity["position"]] = "X" * (end - start - 1)
@@ -63,5 +60,3 @@ def extract_entities(text: Text, num_cores:int = 4):
     pool.close()
     return {"Anonymized_Text": results}
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000, debug=True)
