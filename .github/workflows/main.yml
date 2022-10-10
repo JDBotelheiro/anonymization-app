@@ -26,4 +26,9 @@ jobs:
           host: ${{ secrets.HOST}}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
-          script: whoami
+          script: |
+            rm -rf anonymization-app
+            git clone git@github.com:JDBotelheiro/anonymization-app.git
+            cd anonymization-app
+            sudo docker build -t anonymization:deploy
+            sudo docker run --rm -p 8080:80 anonymization:deploy
