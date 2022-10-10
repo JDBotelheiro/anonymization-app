@@ -9,4 +9,5 @@ EXPOSE 80
 
 COPY ./app /app
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0"]
+ENTRYPOINT ["uvicorn"]
+CMD ["app.main:app", "--host", "0.0.0.0"]
