@@ -39,4 +39,4 @@ jobs:
             git clone git@github.com:JDBotelheiro/anonymization-app.git
             cd anonymization-app
             sudo docker build -t api-application:deploy .
-            sudo docker run --rm 8080:80 api-application:deploy
+            sudo docker run --rm 8080:80 api-application:deploy' 
