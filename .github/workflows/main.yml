@@ -31,5 +31,4 @@ jobs:
             rm -rf anonymization-app
             git clone git@github.com:JDBotelheiro/anonymization-app.git
             cd anonymization-app
-            #sudo docker
-            #sudo docker-compose -f docker-compose.prod.yaml up --build
+
