@@ -28,7 +28,7 @@ jobs:
           key: ${{ secrets.KEY }}
           script: |
             rm -rf anonymization-app
-            git clone https://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@github.com/JDBotelheiro/anonymization-app.git
+            git clone https://github.com/JDBotelheiro/anonymization-app.git
             cd anonymization-app
             sudo docker-compose build
             sudo docker-compose up -d
